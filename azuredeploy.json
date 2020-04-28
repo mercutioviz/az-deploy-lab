@@ -1,5 +1,5 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
     "adminPassword": {
@@ -17,30 +17,44 @@
     "vNetAddressSpace": {
       "type": "string",
       "metadata": {
-        "description": "Address Space of the VNET (e.g. 172.16.136.0/22)"
+        "description": "Address Space of the VNET (e.g. 10.1.0.0/16)"
       },
-      "defaultValue": "172.16.136.0/22"
+      "defaultValue": "10.1.0.0/16"
     },
     "subnetCGF": {
       "type": "string",
       "metadata": {
-        "description": "Network range of the Subnet containing the NextGen Firewall (e.g. 172.16.136.0/24)"
+        "description": "Network range of the Subnet containing the NextGen Firewall (e.g. 10.1.0.0/24)"
       },
-      "defaultValue": "172.16.136.0/24"
+      "defaultValue": "10.1.0.0/24"
     },
-    "subnetRed": {
+    "subnetWeb": {
       "type": "string",
       "metadata": {
-        "description": "Network range of the red subnet (e.g. 172.16.137.0/24)"
+        "description": "Network range of the web/WAF subnet (e.g. 10.1.1.0/24)"
       },
-      "defaultValue": "172.16.137.0/24"
+      "defaultValue": "10.1.1.0/24"
     },
     "subnetGreen": {
       "type": "string",
       "metadata": {
-        "description": "Network range of the green subnet (e.g. 172.16.138.0/24)"
+        "description": "Network range of the green subnet (e.g. 10.1.2.0/24)"
       },
-      "defaultValue": "172.16.138.0/24"
+      "defaultValue": "10.1.2.0/24"
+    },
+    "subnetBlue": {
+      "type": "string",
+      "metadata": {
+        "description": "Network range of the blue subnet (e.g. 10.1.3.0/24)"
+      },
+      "defaultValue": "10.1.3.0/24"
+    },
+    "subnetRed": {
+      "type": "string",
+      "metadata": {
+        "description": "Network range of the red subnet (e.g. 10.1.99.0/24)"
+      },
+      "defaultValue": "10.1.99.0/24"
     },
     "imageSKU": {
       "type": "string",
@@ -61,12 +75,20 @@
       "allowedValues": [ "latest", "8.0.0047501", "7.2.205701", "7.2.112901", "7.1.306101", "7.1.210401" ],
       "defaultValue": "latest"
     },
-    "vmSize": {
+    "vmSizeCGF": {
       "type": "string",
       "defaultValue": "Standard_F1s",
       "allowedValues": [ "Standard_F1s", "Standard_F2s", "Standard_F4s", "Standard_F8s", "Standard_D1_v2", "Standard_D2_v2", "Standard_D3_v2", "Standard_D4_v2", "Standard_DS1_v2", "Standard_DS2_v2", "Standard_DS3_v2", "Standard_DS4_v2", "Standard_D2_v3", "Standard_D4_v3", "Standard_D8_v3", "Standard_D2S_v3", "Standard_D4S_v3", "Standard_D8S_v3" ],
       "metadata": {
-        "description": "Size of the VMs to be created"
+        "description": "Size of the CGF VMs to be created"
+      }
+    },
+    "vmSizeWAF": {
+      "type": "string",
+      "defaultValue": "Standard_DS1_v2",
+      "allowedValues": [ "Standard_D1_v2", "Standard_D2_v2", "Standard_D3_v2", "Standard_D4_v2", "Standard_DS1_v2", "Standard_DS2_v2", "Standard_DS3_v2", "Standard_DS4_v2", "Standard_D2_v3", "Standard_D4_v3", "Standard_D8_v3", "Standard_D2S_v3", "Standard_D4S_v3", "Standard_D8S_v3" ],
+      "metadata": {
+        "description": "Size of the WAF VMs to be created"
       }
     },
     "ccManaged": {
@@ -99,7 +121,8 @@
     "networkApiVersion": "2017-08-01",
 
     "imagePublisher": "barracudanetworks",
-    "imageOffer": "barracuda-ng-firewall",
+    "imageOfferCGF": "barracuda-ng-firewall",
+    "imageOfferWAF": "waf",
 
     "nsgName": "[concat(parameters('prefix'),'-NSG-CGF')]",
     "avName": "[concat(parameters('prefix'),'-AV-CGF')]",
@@ -109,11 +132,17 @@
     "subnetRefCGF": "[resourceID('Microsoft.Network/virtualNetworks/subnets',variables('vNetName'),variables('subnetNameCGF'))]",
     "subnetNameRed": "[concat(parameters('prefix'),'-SUBNET-RED')]",
     "subnetNameGreen": "[concat(parameters('prefix'),'-SUBNET-GREEN')]",
+    "subnetNameWeb": "[concat(parameters('prefix'),'-SUBNET-WEB')]",
+    "subnetNameBlue": "[concat(parameters('prefix'),'-SUBNET-BLUE')]",
     "subnetRefGreen": "[resourceID('Microsoft.Network/virtualNetworks/subnets',variables('vNetName'),variables('subnetNameGreen'))]",
     "rtableNameRed": "[concat( parameters('prefix'), '-RT-FOR-RED' )]",
     "rtableRefRed": "[resourceID('Microsoft.Network/routeTables',variables('rtableNameRed'))]",
     "rtableNameGreen": "[concat( parameters('prefix'), '-RT-FOR-GREEN' )]",
     "rtableRefGreen": "[resourceID('Microsoft.Network/routeTables',variables('rtableNameGreen'))]",
+    "rtableNameWeb": "[concat( parameters('prefix'), '-RT-FOR-WEB' )]",
+    "rtableRefWeb": "[resourceID('Microsoft.Network/routeTables',variables('rtableNameWeb'))]",
+    "rtableNameBlue": "[concat( parameters('prefix'), '-RT-FOR-BLUE' )]",
+    "rtableRefBlue": "[resourceID('Microsoft.Network/routeTables',variables('rtableNameBlue'))]",
 
     "cgfVmName1": "[concat(parameters('prefix'),'-VM-CGF-A')]",
     "cgfVmName2": "[concat(parameters('prefix'),'-VM-CGF-B')]",
@@ -127,19 +156,29 @@
     "dnsNameForCGF": "[toLower( concat( parameters('prefix'), '-cgf-', uniqueString(resourceGroup().id) ) )]",
     "lbName-external": "[concat(parameters('prefix'),'-ELB-CGF')]",
     "lbName-internal": "[concat(parameters('prefix'),'-ILB-CGF')]",
+    "lbName-internal-waf": "[concat(parameters('prefix'),'-ILB-WAF')]",
     "lbID-external": "[resourceId('Microsoft.Network/loadBalancers',variables('lbName-external'))]",
     "lbID-internal": "[resourceId('Microsoft.Network/loadBalancers',variables('lbName-internal'))]",
+    "lbID-internal-waf": "[resourceId('Microsoft.Network/loadBalancers',variables('lbName-internal-waf'))]",
     "lbPIPID": "[resourceId('Microsoft.Network/publicIPAddresses',variables('lbPIPAddressName'))]",
     "lbFrontEndPoolID-external": "[concat(variables('lbID-external'),'/frontendIPConfigurations/loadBalancerFrontend')]",
     "lbFrontEndPoolID-internal": "[concat(variables('lbID-internal'),'/frontendIPConfigurations/loadBalancerFrontend')]",
+    "lbFrontEndPoolID-internal-waf": "[concat(variables('lbID-internal-waf'),'/frontendIPConfigurations/loadBalancerFrontend')]",
     "lbBackEndPoolID-external": "[concat(variables('lbID-external'),'/backendAddressPools/loadBalancerBackend')]",
     "lbBackEndPoolID-internal": "[concat(variables('lbID-internal'),'/backendAddressPools/loadBalancerBackend')]",
+    "lbBackEndPoolID-internal-waf": "[concat(variables('lbID-internal-waf'),'/backendAddressPools/loadBalancerBackend')]",
     "lbProbeID-external": "[concat(variables('lbID-external'),'/probes/HAProbe')]",
     "lbProbeID-internal": "[concat(variables('lbID-internal'),'/probes/HAProbe')]",
     "lbIPAddress-internal": "[concat( variables( 'cgfSubnetAddrSplit' )[0], '.', variables( 'cgfSubnetAddrSplit' )[1], '.', variables( 'cgfSubnetAddrSplit' )[2], '.', add( int( variables( 'cgfSubnetAddrSplit' )[3]), 10 ))]",
+    "lbProbeID-internal-waf": "[concat(variables('lbID-internal-waf'),'/probes/HAProbe')]",
+    "lbIPAddress-internal-waf": "[concat( variables( 'webSubnetAddrSplit' )[0], '.', variables( 'webSubnetAddrSplit' )[1], '.', variables( 'webSubnetAddrSplit' )[2], '.', add( int( variables( 'webSubnetAddrSplit' )[3]), 10 ))]",
 
     "adminUsername": "notused",
     "singleQuotationMark": "'",
+
+    "webSubnetSplit": "[split( parameters( 'subnetWeb' ), '/' )]",
+    "webSubnetAddrSplit": "[split( variables( 'webSubnetSplit' )[0], '.' )]",
+    "webSubnetMask": "[variables( 'webSubnetSplit' )[1]]",
 
     "cgfSubnetSplit": "[split( parameters( 'subnetCGF' ), '/' )]",
     "cgfSubnetAddrSplit": "[split( variables( 'cgfSubnetSplit' )[0], '.' )]",
@@ -232,6 +271,24 @@
               "addressPrefix": "[parameters('subnetGreen')]",
               "routeTable": {
                 "id": "[variables('rtableRefGreen')]"
+              }
+            }
+          },
+          {
+            "name": "[variables('subnetNameWeb')]",
+            "properties": {
+              "addressPrefix": "[parameters('subnetWeb')]",
+              "routeTable": {
+                "id": "[variables('rtableRefWeb')]"
+              }
+            }
+          },
+          {
+            "name": "[variables('subnetNameBlue')]",
+            "properties": {
+              "addressPrefix": "[parameters('subnetBlue')]",
+              "routeTable": {
+                "id": "[variables('rtableRefBlue')]"
               }
             }
           }
@@ -614,7 +671,7 @@
       "location": "[resourceGroup().location]",
       "plan": {
         "name": "[parameters('imageSKU')]",
-        "Product": "[variables('imageOffer')]",
+        "Product": "[variables('imageOfferCGF')]",
         "Publisher": "[variables('imagePublisher')]"
       },
       "dependsOn": [
@@ -626,7 +683,7 @@
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('avName'))]"
         },
         "hardwareProfile": {
-          "vmSize": "[parameters('vmSize')]"
+          "vmSize": "[parameters('vmSizeCGF')]"
         },
         "osProfile": {
           "computerName": "[variables('cgfVmName1')]",
@@ -637,7 +694,7 @@
         "storageProfile": {
           "imageReference": {
             "publisher": "[variables('imagePublisher')]",
-            "offer": "[variables('imageOffer')]",
+            "offer": "[variables('imageOfferCGF')]",
             "sku": "[parameters('imageSKU')]",
             "version": "[parameters('version')]"
           },
@@ -669,7 +726,7 @@
       "location": "[resourceGroup().location]",
       "plan": {
         "name": "[parameters('imageSKU')]",
-        "Product": "[variables('imageOffer')]",
+        "Product": "[variables('imageOfferCGF')]",
         "Publisher": "[variables('imagePublisher')]"
       },
       "dependsOn": [
@@ -681,7 +738,7 @@
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('avName'))]"
         },
         "hardwareProfile": {
-          "vmSize": "[parameters('vmSize')]"
+          "vmSize": "[parameters('vmSizeCGF')]"
         },
         "osProfile": {
           "computerName": "[variables('cgfVMName2')]",
@@ -692,7 +749,7 @@
         "storageProfile": {
           "imageReference": {
             "publisher": "[variables('imagePublisher')]",
-            "offer": "[variables('imageOffer')]",
+            "offer": "[variables('imageOfferCGF')]",
             "sku": "[parameters('imageSKU')]",
             "version": "[parameters('version')]"
           },
