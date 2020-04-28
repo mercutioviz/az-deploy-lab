@@ -1,6 +1,6 @@
 {
-  "itemDisplayName": "arracuda CloudGen Firewall for Azure - High Availability Cluster in an Availability Set using an Internal Standard Load Balancer",
-  "description": "High Availability Cluster in an Availability Set using an Internal Standard Load Balancer",
-  "githubUsername": "jvhoof",
-  "dateUpdated": "2018-10-30"
+  "itemDisplayName": "Collins Azure CGF/WAF lab installer",
+  "description": "Installs fresh version of CGFs and WAFs plus jump host and vulnerable Debian host",
+  "githubUsername": "mercutioviz",
+  "dateUpdated": "2020-04-28"
 }
