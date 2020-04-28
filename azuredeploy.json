@@ -125,7 +125,6 @@
     "imageOfferWAF": "waf",
 
     "nsgName": "[concat(parameters('prefix'),'-NSG-CGF')]",
-    "avName": "[concat(parameters('prefix'),'-AV-CGF')]",
     "vNetName": "[concat(parameters('prefix'),'-VNET')]",
     "vNetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('vNetName'))]",
     "subnetNameCGF": "[concat(parameters('prefix'),'-SUBNET-CGF')]",
