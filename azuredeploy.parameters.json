@@ -3,42 +3,39 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "adminPassword": {
-      "value": "GEN-PASSWORD"
+      "value": "hjkl6789HJKL"
     },
     "prefix": {
-      "value": "GEN-PREFIX"
+      "value": "MCLAB"
     },
     "vNetAddressSpace": {
-      "value": "172.16.136.0/22"
+      "value": "10.1.0.0/16"
     },
     "subnetCGF": {
-      "value": "172.16.136.0/24"
+      "value": "10.1.0.0/24"
     },
-    "subnetRed": {
-      "value": "172.16.137.0/24"
+    "subnetWeb": {
+      "value": "10.1.1.0/24"
     },
     "subnetGreen": {
-      "value": "172.16.138.0/24"
+      "value": "10.1.2.0/24"
+    },
+    "subnetBlue": {
+      "value": "10.1.3.0/24"
+    },
+    "subnetRed": {
+      "value": "10.1.99.0/24"
     },
     "imageSKU": {
       "value": "byol"
     },
-    "vmSize": {
-      "value": "Standard_F1s"
+    "vmSizeCGF": {
+      "value": "Standard_DS1_v2"
     },
-    "ccManaged": {
-      "value": "no"
+    "vmSizeWAF": {
+      "value": "Standard_DS1_v2"
     },
-    "ccIpAddress": {
-      "value": ""
-    },
-    "ccClusterName": {
-      "value": ""
-    },
-    "ccRangeId": {
-      "value": ""
-    },
-    "ccSecret": {
+    "": {
       "value": ""
     }
   }
