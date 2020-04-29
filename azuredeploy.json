@@ -151,6 +151,14 @@
     "cgfPIPAddressName2": "[concat(variables('cgfVmName2'),'-PIP')]",
     "cgfPIPAddressType": "Static",
 
+    "wafVmName1": "[concat(parameters('prefix'),'-VM-WAF-A')]",
+    "wafVmName2": "[concat(parameters('prefix'),'-VM-WAF-B')]",
+    "wafNicName1": "[concat(variables('wafVmName1'),'-NIC')]",
+    "wafNicName2": "[concat(variables('wafVmName2'),'-NIC')]",
+    "wafPIPAddressName1": "[concat(variables('wafVmName1'),'-PIP')]",
+    "wafPIPAddressName2": "[concat(variables('wafVmName2'),'-PIP')]",
+    "wafPIPAddressType": "Static",
+
     "lbPIPAddressName": "[concat(parameters('prefix'),'-CGF-LB-PIP')]",
     "dnsNameForCGF": "[toLower( concat( parameters('prefix'), '-cgf-', uniqueString(resourceGroup().id) ) )]",
     "lbName-external": "[concat(parameters('prefix'),'-ELB-CGF')]",
@@ -178,6 +186,8 @@
     "webSubnetSplit": "[split( parameters( 'subnetWeb' ), '/' )]",
     "webSubnetAddrSplit": "[split( variables( 'webSubnetSplit' )[0], '.' )]",
     "webSubnetMask": "[variables( 'webSubnetSplit' )[1]]",
+    "wafVmAddress1": "[concat( variables( 'webSubnetAddrSplit' )[0], '.', variables( 'webSubnetAddrSplit' )[1], '.', variables( 'webSubnetAddrSplit' )[2], '.', add( int( variables( 'webSubnetAddrSplit' )[3]), 4 ))]",
+    "wafVmAddress2": "[concat( variables( 'webSubnetAddrSplit' )[0], '.', variables( 'webSubnetAddrSplit' )[1], '.', variables( 'webSubnetAddrSplit' )[2], '.', add( int( variables( 'webSubnetAddrSplit' )[3]), 5 ))]",
 
     "cgfSubnetSplit": "[split( parameters( 'subnetCGF' ), '/' )]",
     "cgfSubnetAddrSplit": "[split( variables( 'cgfSubnetSplit' )[0], '.' )]",
