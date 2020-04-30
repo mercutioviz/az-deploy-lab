@@ -132,9 +132,10 @@
     "subnetRefCGF": "[resourceID('Microsoft.Network/virtualNetworks/subnets',variables('vNetName'),variables('subnetNameCGF'))]",
     "subnetNameRed": "[concat(parameters('prefix'),'-SUBNET-RED')]",
     "subnetNameGreen": "[concat(parameters('prefix'),'-SUBNET-GREEN')]",
-    "subnetNameWeb": "[concat(parameters('prefix'),'-SUBNET-WEB')]",
     "subnetNameBlue": "[concat(parameters('prefix'),'-SUBNET-BLUE')]",
-    "subnetRefGreen": "[resourceID('Microsoft.Network/virtualNetworks/subnets',variables('vNetName'),variables('subnetNameGreen'))]",
+    "subnetNameWeb": "[concat(parameters('prefix'),'-SUBNET-WEB')]",
+    "subnetRefWeb": "[resourceID('Microsoft.Network/virtualNetworks/subnets',variables('vNetName'),variables('subnetNameWeb'))]",
+
     "rtableNameRed": "[concat( parameters('prefix'), '-RT-FOR-RED' )]",
     "rtableRefRed": "[resourceID('Microsoft.Network/routeTables',variables('rtableNameRed'))]",
     "rtableNameGreen": "[concat( parameters('prefix'), '-RT-FOR-GREEN' )]",
@@ -163,22 +164,22 @@
     "lbPIPAddressName": "[concat(parameters('prefix'),'-CGF-LB-PIP')]",
     "dnsNameForCGF": "[toLower( concat( parameters('prefix'), '-cgf-', uniqueString(resourceGroup().id) ) )]",
     "lbName-external": "[concat(parameters('prefix'),'-ELB-CGF')]",
-    "lbName-internal": "[concat(parameters('prefix'),'-ILB-CGF')]",
+    "lbName-internal-cgf": "[concat(parameters('prefix'),'-ILB-CGF')]",
     "lbName-internal-waf": "[concat(parameters('prefix'),'-ILB-WAF')]",
     "lbID-external": "[resourceId('Microsoft.Network/loadBalancers',variables('lbName-external'))]",
-    "lbID-internal": "[resourceId('Microsoft.Network/loadBalancers',variables('lbName-internal'))]",
+    "lbID-internal-cgf": "[resourceId('Microsoft.Network/loadBalancers',variables('lbName-internal-cgf'))]",
     "lbID-internal-waf": "[resourceId('Microsoft.Network/loadBalancers',variables('lbName-internal-waf'))]",
     "lbPIPID": "[resourceId('Microsoft.Network/publicIPAddresses',variables('lbPIPAddressName'))]",
     "lbFrontEndPoolID-external": "[concat(variables('lbID-external'),'/frontendIPConfigurations/loadBalancerFrontend')]",
-    "lbFrontEndPoolID-internal": "[concat(variables('lbID-internal'),'/frontendIPConfigurations/loadBalancerFrontend')]",
+    "lbFrontEndPoolID-internal-cgf": "[concat(variables('lbID-internal-cgf'),'/frontendIPConfigurations/loadBalancerFrontend')]",
     "lbFrontEndPoolID-internal-waf": "[concat(variables('lbID-internal-waf'),'/frontendIPConfigurations/loadBalancerFrontend')]",
     "lbBackEndPoolID-external": "[concat(variables('lbID-external'),'/backendAddressPools/loadBalancerBackend')]",
-    "lbBackEndPoolID-internal": "[concat(variables('lbID-internal'),'/backendAddressPools/loadBalancerBackend')]",
+    "lbBackEndPoolID-internal-cgf": "[concat(variables('lbID-internal-cgf'),'/backendAddressPools/loadBalancerBackend')]",
     "lbBackEndPoolID-internal-waf": "[concat(variables('lbID-internal-waf'),'/backendAddressPools/loadBalancerBackend')]",
     "lbProbeID-external": "[concat(variables('lbID-external'),'/probes/HAProbe')]",
-    "lbProbeID-internal": "[concat(variables('lbID-internal'),'/probes/HAProbe')]",
-    "lbIPAddress-internal": "[concat( variables( 'cgfSubnetAddrSplit' )[0], '.', variables( 'cgfSubnetAddrSplit' )[1], '.', variables( 'cgfSubnetAddrSplit' )[2], '.', add( int( variables( 'cgfSubnetAddrSplit' )[3]), 10 ))]",
-    "lbProbeID-internal-waf": "[concat(variables('lbID-internal-waf'),'/probes/HAProbe')]",
+    "lbProbeID-internal-cgf": "[concat(variables('lbID-internal-cgf'),'/probes/HAProbe')]",
+    "lbIPAddress-internal-cgf": "[concat( variables( 'cgfSubnetAddrSplit' )[0], '.', variables( 'cgfSubnetAddrSplit' )[1], '.', variables( 'cgfSubnetAddrSplit' )[2], '.', add( int( variables( 'cgfSubnetAddrSplit' )[3]), 10 ))]",
+    "lbProbeID-internal-waf": "[concat(variables('lbID-internal-waf'),'/probes/WAF-LB-Probe')]",
     "lbIPAddress-internal-waf": "[concat( variables( 'webSubnetAddrSplit' )[0], '.', variables( 'webSubnetAddrSplit' )[1], '.', variables( 'webSubnetAddrSplit' )[2], '.', add( int( variables( 'webSubnetAddrSplit' )[3]), 10 ))]",
 
     "adminUsername": "notused",
@@ -398,7 +399,7 @@
             "properties": {
               "addressPrefix": "0.0.0.0/0",
               "nextHopType": "VirtualAppliance",
-              "nextHopIpAddress": "[variables('lbIPAddress-internal')]"
+              "nextHopIpAddress": "[variables('lbIPAddress-internal-cgf')]"
             }
           },
           {
@@ -406,7 +407,7 @@
             "properties": {
               "addressPrefix": "[parameters('subnetGreen')]",
               "nextHopType": "VirtualAppliance",
-              "nextHopIpAddress": "[variables('lbIPAddress-internal')]"
+              "nextHopIpAddress": "[variables('lbIPAddress-internal-cgf')]"
             }
           }
         ]
@@ -424,7 +425,7 @@
             "properties": {
               "addressPrefix": "0.0.0.0/0",
               "nextHopType": "VirtualAppliance",
-              "nextHopIpAddress": "[variables('lbIPAddress-internal')]"
+              "nextHopIpAddress": "[variables('lbIPAddress-internal-cgf')]"
             }
           },
           {
@@ -432,7 +433,7 @@
             "properties": {
               "addressPrefix": "[parameters('subnetRed')]",
               "nextHopType": "VirtualAppliance",
-              "nextHopIpAddress": "[variables('lbIPAddress-internal')]"
+              "nextHopIpAddress": "[variables('lbIPAddress-internal-cgf')]"
             }
           }
         ]
@@ -450,7 +451,7 @@
             "properties": {
               "addressPrefix": "0.0.0.0/0",
               "nextHopType": "VirtualAppliance",
-              "nextHopIpAddress": "[variables('lbIPAddress-internal')]"
+              "nextHopIpAddress": "[variables('lbIPAddress-internal-cgf')]"
             }
           },
           {
@@ -458,7 +459,7 @@
             "properties": {
               "addressPrefix": "[parameters('vNetAddressSpace')]",
               "nextHopType": "VirtualAppliance",
-              "nextHopIpAddress": "[variables('lbIPAddress-internal')]"
+              "nextHopIpAddress": "[variables('lbIPAddress-internal-cgf')]"
             }
           }
         ]
@@ -483,7 +484,7 @@
             "properties": {
               "addressPrefix": "[parameters('vNetAddressSpace')]",
               "nextHopType": "VirtualAppliance",
-              "nextHopIpAddress": "[variables('lbIPAddress-internal')]"
+              "nextHopIpAddress": "[variables('lbIPAddress-internal-cgf')]"
             }
           }
         ]
@@ -629,7 +630,7 @@
     },
     {
       "apiVersion": "[variables('networkApiVersion')]",
-      "name": "[variables('lbName-internal')]",
+      "name": "[variables('lbName-internal-cgf')]",
       "type": "Microsoft.Network/loadBalancers",
       "location": "[resourceGroup().location]",
       "sku": {
@@ -647,7 +648,7 @@
           {
             "name": "loadBalancerFrontEnd",
             "properties": {
-              "privateIPAddress": "[variables('lbIPAddress-internal')]",
+              "privateIPAddress": "[variables('lbIPAddress-internal-cgf')]",
               "privateIPAllocationMethod": "Static",
               "subnet": {
                 "id": "[variables('subnetRefCGF')]"
@@ -662,10 +663,10 @@
         ],
         "loadBalancingRules": [
           {
-            "name": "lbrule",
+            "name": "AllPorts",
             "properties": {
               "frontendIPConfiguration": {
-                "id": "[variables('lbFrontEndPoolID-internal')]"
+                "id": "[variables('lbFrontEndPoolID-internal-cgf')]"
               },
               "frontendPort": 0,
               "backendPort": 0,
@@ -674,10 +675,10 @@
               "protocol": "All",
               "loadDistribution": "Default",
               "backendAddressPool": {
-                "id": "[variables('lbBackEndPoolID-internal')]"
+                "id": "[variables('lbBackEndPoolID-internal-cgf')]"
               },
               "probe": {
-                "id": "[variables('lbProbeID-internal')]"
+                "id": "[variables('lbProbeID-internal-cgf')]"
               }
             }
           }
@@ -690,6 +691,99 @@
               "port": 65000,
               "intervalInSeconds": 5,
               "numberOfProbes": 2
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "[variables('networkApiVersion')]",
+      "name": "[variables('lbName-internal-waf')]",
+      "type": "Microsoft.Network/loadBalancers",
+      "location": "[resourceGroup().location]",
+      "sku": {
+        "name": "Standard"
+      },
+      "dependsOn": [
+        "[variables('vNetID')]"
+      ],
+      "comments": "Internal LoadBalancer for the Barracuda WAF cluster",
+      "tags": {
+        "displayName": "WAFLB-Internal"
+      },
+      "properties": {
+        "frontendIPConfigurations": [
+          {
+            "name": "loadBalancerFrontEnd",
+            "properties": {
+              "privateIPAddress": "[variables('lbIPAddress-internal-waf')]",
+              "privateIPAllocationMethod": "Static",
+              "subnet": {
+                "id": "[variables('subnetRefWeb')]"
+              }
+            }
+          }
+        ],
+        "backendAddressPools": [
+          {
+            "name": "WAF-ILB-Backend-Pool"
+          }
+        ],
+        "loadBalancingRules": [
+          {
+            "name": "HTTP",
+            "properties": {
+                "frontendIPConfiguration": {
+                  "id": "[variables('lbFrontEndPoolID-internal-waf')]"
+                },
+                "frontendPort": 80,
+                "backendPort": 80,
+                "enableFloatingIP": false,
+                "idleTimeoutInMinutes": 4,
+                "protocol": "Tcp",
+                "enableTcpReset": false,
+                "loadDistribution": "Default",
+                "disableOutboundSnat": false,
+                "backendAddressPool": {
+                  "id": "[variables('lbBackEndPoolID-internal-waf')]"
+                },
+                "probe": {
+                  "id": "[variables('lbProbeID-internal-waf')]"  
+                }
+            }
+          },
+          {
+            "name": "HTTPS",
+            "properties": {
+                "frontendIPConfiguration": {
+                  "id": "[variables('lbFrontEndPoolID-internal-waf')]"
+                },
+                "frontendPort": 443,
+                "backendPort": 443,
+                "enableFloatingIP": false,
+                "idleTimeoutInMinutes": 4,
+                "protocol": "Tcp",
+                "enableTcpReset": false,
+                "loadDistribution": "Default",
+                "disableOutboundSnat": false,
+                "backendAddressPool": {
+                  "id": "[variables('lbBackEndPoolID-internal-waf')]"
+                },
+                "probe": {
+                  "id": "[variables('lbProbeID-internal-waf')]"  
+                }
+            }
+          }
+        ],
+        "probes": [
+          {
+            "name": "WAF-LB-Probe",
+            "properties": {
+                "protocol": "Http",
+                "port": 8000,
+                "requestPath": "/cgi-mod/index.cgi",
+                "intervalInSeconds": 5,
+                "numberOfProbes": 2
             }
           }
         ]
@@ -734,7 +828,7 @@
         "[concat('Microsoft.Network/publicIPAddresses/', variables('cgfPIPAddressName1'))]",
         "[concat('Microsoft.Network/virtualNetworks/', variables('vNetName'))]",
         "[variables('lbID-external')]",
-        "[variables('lbID-internal')]"
+        "[variables('lbID-internal-cgf')]"
       ],
       "properties": {
         "enableIPForwarding": true,
@@ -753,7 +847,7 @@
               "primary": true,
               "loadBalancerBackendAddressPools": [
                 { "id": "[variables('lbBackEndPoolID-external')]" },
-                { "id": "[variables('lbBackEndPoolID-internal')]" }
+                { "id": "[variables('lbBackEndPoolID-internal-cgf')]" }
               ]
             }
           }
@@ -769,7 +863,7 @@
         "[concat('Microsoft.Network/publicIPAddresses/', variables('cgfPIPAddressName2'))]",
         "[concat('Microsoft.Network/virtualNetworks/', variables('vNetName'))]",
         "[variables('lbID-external')]",
-        "[variables('lbID-internal')]"
+        "[variables('lbID-internal-cgf')]"
       ],
       "properties": {
         "enableIPForwarding": true,
@@ -788,7 +882,7 @@
               "primary": true,
               "loadBalancerBackendAddressPools": [
                 { "id": "[variables('lbBackEndPoolID-external')]" },
-                { "id": "[variables('lbBackEndPoolID-internal')]" }
+                { "id": "[variables('lbBackEndPoolID-internal-cgf')]" }
               ]
             }
           }
