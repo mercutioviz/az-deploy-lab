@@ -239,7 +239,8 @@
           }
         ]
       }
-    },    {
+    },
+    {
       "apiVersion": "[variables('networkApiVersion')]",
       "type": "Microsoft.Network/networkSecurityGroups",
       "name": "[variables('nsgNameWAF')]",
@@ -324,6 +325,9 @@
       "location": "[resourceGroup().location]",
       "dependsOn": [
         "[variables('nsgNameCGF')]",
+        "[variables('nsgNameWAF')]",
+        "[variables('rtableRefWeb')]",
+        "[variables('rtableRefBlue')]",
         "[variables('rtableRefRed')]",
         "[variables('rtableRefGreen')]"
       ],
@@ -427,6 +431,57 @@
             "name": "to-Red",
             "properties": {
               "addressPrefix": "[parameters('subnetRed')]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[variables('lbIPAddress-internal')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "[variables( 'networkApiVersion' )]",
+      "type": "Microsoft.Network/routeTables",
+      "name": "[variables('rtableNameBlue')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "routes": [
+          {
+            "name": "to-Internet",
+            "properties": {
+              "addressPrefix": "0.0.0.0/0",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[variables('lbIPAddress-internal')]"
+            }
+          },
+          {
+            "name": "to-VNet",
+            "properties": {
+              "addressPrefix": "[parameters('vNetAddressSpace')]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[variables('lbIPAddress-internal')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "[variables( 'networkApiVersion' )]",
+      "type": "Microsoft.Network/routeTables",
+      "name": "[variables('rtableNameWeb')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "routes": [
+          {
+            "name": "to-Internet",
+            "properties": {
+              "addressPrefix": "0.0.0.0/0",
+              "nextHopType": "VirtualNetworkGateway"
+            }
+          },
+          {
+            "name": "to-VNet",
+            "properties": {
+              "addressPrefix": "[parameters('vNetAddressSpace')]",
               "nextHopType": "VirtualAppliance",
               "nextHopIpAddress": "[variables('lbIPAddress-internal')]"
             }
