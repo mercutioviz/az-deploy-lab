@@ -124,7 +124,8 @@
     "imageOfferCGF": "barracuda-ng-firewall",
     "imageOfferWAF": "waf",
 
-    "nsgName": "[concat(parameters('prefix'),'-NSG-CGF')]",
+    "nsgNameCGF": "[concat(parameters('prefix'),'-NSG-CGF')]",
+    "nsgNameWAF": "[concat(parameters('prefix'),'-NSG-WAF')]",
     "vNetName": "[concat(parameters('prefix'),'-VNET')]",
     "vNetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('vNetName'))]",
     "subnetNameCGF": "[concat(parameters('prefix'),'-SUBNET-CGF')]",
@@ -204,7 +205,7 @@
     {
       "apiVersion": "[variables('networkApiVersion')]",
       "type": "Microsoft.Network/networkSecurityGroups",
-      "name": "[variables('nsgName')]",
+      "name": "[variables('nsgNameCGF')]",
       "location": "[resourceGroup().location]",
       "properties": {
         "securityRules": [
@@ -238,6 +239,83 @@
           }
         ]
       }
+    },    {
+      "apiVersion": "[variables('networkApiVersion')]",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[variables('nsgNameWAF')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "securityRules": [
+          {
+              "name": "MGMT_-_HTTP",
+              "properties": {
+                  "protocol": "TCP",
+                  "sourcePortRange": "*",
+                  "destinationPortRange": "8000",
+                  "sourceAddressPrefix": "*",
+                  "destinationAddressPrefix": "*",
+                  "access": "Allow",
+                  "priority": 1010,
+                  "direction": "Inbound",
+                  "sourcePortRanges": [],
+                  "destinationPortRanges": [],
+                  "sourceAddressPrefixes": [],
+                  "destinationAddressPrefixes": []
+              }
+          },
+          {
+              "name": "HTTPS",
+              "properties": {
+                  "protocol": "TCP",
+                  "sourcePortRange": "*",
+                  "destinationPortRange": "443",
+                  "sourceAddressPrefix": "*",
+                  "destinationAddressPrefix": "*",
+                  "access": "Allow",
+                  "priority": 1020,
+                  "direction": "Inbound",
+                  "sourcePortRanges": [],
+                  "destinationPortRanges": [],
+                  "sourceAddressPrefixes": [],
+                  "destinationAddressPrefixes": []
+              }
+          },
+          {
+              "name": "MGMT_-_HTTPS",
+              "properties": {
+                  "protocol": "TCP",
+                  "sourcePortRange": "*",
+                  "destinationPortRange": "8443",
+                  "sourceAddressPrefix": "*",
+                  "destinationAddressPrefix": "*",
+                  "access": "Allow",
+                  "priority": 1030,
+                  "direction": "Inbound",
+                  "sourcePortRanges": [],
+                  "destinationPortRanges": [],
+                  "sourceAddressPrefixes": [],
+                  "destinationAddressPrefixes": []
+              }
+          },
+          {
+              "name": "HTTP",
+              "properties": {
+                  "protocol": "TCP",
+                  "sourcePortRange": "*",
+                  "destinationPortRange": "80",
+                  "sourceAddressPrefix": "*",
+                  "destinationAddressPrefix": "*",
+                  "access": "Allow",
+                  "priority": 1021,
+                  "direction": "Inbound",
+                  "sourcePortRanges": [],
+                  "destinationPortRanges": [],
+                  "sourceAddressPrefixes": [],
+                  "destinationAddressPrefixes": []
+              }
+          }
+        ]
+      }
     },
     {
       "apiVersion": "[variables('networkApiVersion')]",
@@ -245,7 +323,7 @@
       "name": "[variables('vNetName')]",
       "location": "[resourceGroup().location]",
       "dependsOn": [
-        "[variables('nsgName')]",
+        "[variables('nsgNameCGF')]",
         "[variables('rtableRefRed')]",
         "[variables('rtableRefGreen')]"
       ],
@@ -261,7 +339,7 @@
             "properties": {
               "addressPrefix": "[parameters('subnetCGF')]",
               "networkSecurityGroup": {
-                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgNameCGF'))]"
               }
             }
           },
