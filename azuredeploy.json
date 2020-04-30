@@ -821,6 +821,36 @@
     },
     {
       "apiVersion": "[variables('networkApiVersion')]",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "zones": [
+        "1"
+      ],      
+      "name": "[variables('wafPIPAddressName1')]",
+      "location": "[resourceGroup().location]",
+      "sku": {
+        "name": "Standard"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "[variables('wafPIPAddressType')]"
+      }
+    },
+    {
+      "apiVersion": "[variables('networkApiVersion')]",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "zones": [
+        "2"
+      ],
+      "name": "[variables('wafPIPAddressName2')]",
+      "location": "[resourceGroup().location]",
+      "sku": {
+        "name": "Standard"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "[variables('wafPIPAddressType')]"
+      }
+    },
+    {
+      "apiVersion": "[variables('networkApiVersion')]",
       "type": "Microsoft.Network/networkInterfaces",
       "name": "[variables('cgfNicName1')]",
       "location": "[resourceGroup().location]",
@@ -883,6 +913,72 @@
               "loadBalancerBackendAddressPools": [
                 { "id": "[variables('lbBackEndPoolID-external')]" },
                 { "id": "[variables('lbBackEndPoolID-internal-cgf')]" }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "[variables('networkApiVersion')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[variables('wafNicName1')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('wafPIPAddressName1'))]",
+        "[concat('Microsoft.Network/virtualNetworks/', variables('vNetName'))]",
+        "[variables('lbID-internal-waf')]"
+      ],
+      "properties": {
+        "enableIPForwarding": true,
+        "ipConfigurations": [
+          {
+            "name": "ipconfig",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[variables( 'wafVmAddress1' )]",
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('wafPIPAddressName1'))]"
+              },
+              "subnet": {
+                "id": "[variables('subnetRefWeb')]"
+              },
+              "primary": true,
+              "loadBalancerBackendAddressPools": [
+                { "id": "[variables('lbBackEndPoolID-internal-waf')]" }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "[variables('networkApiVersion')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[variables('wafNicName2')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('wafPIPAddressName2'))]",
+        "[concat('Microsoft.Network/virtualNetworks/', variables('vNetName'))]",
+        "[variables('lbID-internal-waf')]"
+      ],
+      "properties": {
+        "enableIPForwarding": true,
+        "ipConfigurations": [
+          {
+            "name": "ipconfig",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[variables( 'wafVmAddress2' )]",
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('wafPIPAddressName2'))]"
+              },
+              "subnet": {
+                "id": "[variables('subnetRefWeb')]"
+              },
+              "primary": true,
+              "loadBalancerBackendAddressPools": [
+                { "id": "[variables('lbBackEndPoolID-internal-waf')]" }
               ]
             }
           }
