@@ -203,6 +203,7 @@
     "cgfCustomDataCC2": "[base64(concat('#!/bin/bash\n\n', 'echo \"*/2 * * * * root echo \\\"', parameters( 'ccSecret' ), '\\\" | /opt/phion/bin/getpar -a ', parameters('ccIpAddress'), ' -r ', parameters( 'ccRangeId' ), ' -c ', parameters( 'ccClusterName' ), ' -b ', variables( 'cgfVmName2' ), ' -d /opt/phion/update/box.par -s --verbosity 10 >> /tmp/getpar.log && /etc/rc.d/init.d/phion stop && /etc/rc.d/init.d/phion start && rm /etc/cron.d/getpar\" > /etc/cron.d/getpar\n'))]"
   },
   "resources": [
+    // NSG - CGFS
     {
       "apiVersion": "[variables('networkApiVersion')]",
       "type": "Microsoft.Network/networkSecurityGroups",
@@ -241,6 +242,7 @@
         ]
       }
     },
+    // NSG - WAFs
     {
       "apiVersion": "[variables('networkApiVersion')]",
       "type": "Microsoft.Network/networkSecurityGroups",
@@ -319,6 +321,7 @@
         ]
       }
     },
+    // VNET
     {
       "apiVersion": "[variables('networkApiVersion')]",
       "type": "Microsoft.Network/virtualNetworks",
@@ -387,6 +390,7 @@
         ]
       }
     },
+    // Route tables
     {
       "apiVersion": "[variables( 'networkApiVersion' )]",
       "type": "Microsoft.Network/routeTables",
@@ -490,6 +494,7 @@
         ]
       }
     },
+    // PIP - CGF ELB
     {
       "apiVersion": "[variables('networkApiVersion')]",
       "type": "Microsoft.Network/publicIPAddresses",
@@ -505,6 +510,7 @@
         }
       }
     },
+    // LB - CGF ELB
     {
       "apiVersion": "[variables('networkApiVersion')]",
       "name": "[variables('lbName-external')]",
@@ -628,6 +634,7 @@
         ]
       }
     },
+    // LB - CGF ILB
     {
       "apiVersion": "[variables('networkApiVersion')]",
       "name": "[variables('lbName-internal-cgf')]",
@@ -696,6 +703,7 @@
         ]
       }
     },
+    // LB - WAF ILB
     {
       "apiVersion": "[variables('networkApiVersion')]",
       "name": "[variables('lbName-internal-waf')]",
@@ -789,6 +797,7 @@
         ]
       }
     },
+    // PIPs - CGF
     {
       "apiVersion": "[variables('networkApiVersion')]",
       "type": "Microsoft.Network/publicIPAddresses",
@@ -819,6 +828,7 @@
         "publicIPAllocationMethod": "[variables('cgfPIPAddressType')]"
       }
     },
+    // PIPs - WAF
     {
       "apiVersion": "[variables('networkApiVersion')]",
       "type": "Microsoft.Network/publicIPAddresses",
@@ -849,6 +859,7 @@
         "publicIPAllocationMethod": "[variables('wafPIPAddressType')]"
       }
     },
+    // NICs - CGFs
     {
       "apiVersion": "[variables('networkApiVersion')]",
       "type": "Microsoft.Network/networkInterfaces",
@@ -919,6 +930,7 @@
         ]
       }
     },
+    // NICs - WAFs
     {
       "apiVersion": "[variables('networkApiVersion')]",
       "type": "Microsoft.Network/networkInterfaces",
@@ -985,6 +997,7 @@
         ]
       }
     },
+    // VMs - CGFs
     {
       "apiVersion": "[variables('computeApiVersion')]",
       "type": "Microsoft.Compute/virtualMachines",
@@ -1079,6 +1092,107 @@
           "networkInterfaces": [
             {
               "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('cgfNicName2'))]",
+              "properties": {
+                "primary": true
+              }
+            }
+          ]
+        }
+      }
+    },
+    // VMs - WAFs
+    {
+      "apiVersion": "[variables('computeApiVersion')]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "identity": { 
+        "type": "SystemAssigned"
+      },
+      "name": "[variables('wafVmName1')]",
+      "location": "[resourceGroup().location]",
+      "plan": {
+        "name": "[parameters('imageSKU')]",
+        "Product": "[variables('imageOfferWAF')]",
+        "Publisher": "[variables('imagePublisher')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces/', variables('wafNicName1'))]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[parameters('vmSizeWAF')]"
+        },
+        "osProfile": {
+          "computerName": "[variables('wafVMName1')]",
+          "adminUsername": "[variables('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('imagePublisher')]",
+            "offer": "[variables('imageOfferWAF')]",
+            "sku": "[parameters('imageSKU')]",
+            "version": "[parameters('version')]"
+          },
+          "osDisk": {
+            "name": "[concat(variables('wafVMName1'),'-osdisk')]",
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('wafNicName1'))]",
+              "properties": {
+                "primary": true
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "apiVersion": "[variables('computeApiVersion')]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "identity": { 
+        "type": "SystemAssigned"
+      },
+      "name": "[variables('wafVmName2')]",
+      "location": "[resourceGroup().location]",
+      "plan": {
+        "name": "[parameters('imageSKU')]",
+        "Product": "[variables('imageOfferWAF')]",
+        "Publisher": "[variables('imagePublisher')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces/', variables('wafNicName2'))]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[parameters('vmSizeWAF')]"
+        },
+        "osProfile": {
+          "computerName": "[variables('wafVMName2')]",
+          "adminUsername": "[variables('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('imagePublisher')]",
+            "offer": "[variables('imageOfferWAF')]",
+            "sku": "[parameters('imageSKU')]",
+            "version": "[parameters('version')]"
+          },
+          "osDisk": {
+            "name": "[concat(variables('wafVMName2'),'-osdisk')]",
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('wafNicName2'))]",
               "properties": {
                 "primary": true
               }
