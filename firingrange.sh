@@ -25,7 +25,7 @@ docker run -d -p 1000:80 vulnerables/web-dvwa
 docker run -d -p 2000:80 szsecurity/mutillidae
 docker run -d -p 3000:80 szsecurity/webgoat
 docker run -d -p 4000:80 raesene/bwapp
-docker run -d -p 5000:80 bkimminich/juice-shop
+docker run -d -p 5000:3000 bkimminich/juice-shop
 docker run -d -p 6001:8080 eystsen/altoro
 docker run -d -p 7000:80 kennethreitz/httpbin
 docker run -d -p 8000:80 mutzel/all-in-one-hackazon:postinstall supervisord -n
