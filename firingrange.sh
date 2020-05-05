@@ -3,6 +3,7 @@
 # Setup firing range of vulnerable web apps
 #
 # Tested on Debian 10 Buster and Ubuntu 18.04 LTS
+# Strongly recommend 2 vCPUs and 7+ GB RAM, ex B2ms or DS2_v3
 #
 # Run under sudo or as root
 #
